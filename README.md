@@ -85,3 +85,4 @@ library(shinyDarkmode)
  # Run App
  shinyApp(ui = ui, server = server)
 ```
+![](inst/darkmodeUpdated.gif)
