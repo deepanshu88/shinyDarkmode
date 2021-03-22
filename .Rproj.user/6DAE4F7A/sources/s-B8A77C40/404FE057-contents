@@ -1,0 +1,107 @@
+library(shiny)
+library(shinyWidgets)
+
+use_darkmode <- function() {
+  tagList(
+    tags$head(tags$script(src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js")),
+    tags$script("Shiny.addCustomMessageHandler('darkmode_enable', function(data) { eval(data.message) });"),
+    tags$style(".darkmode-layer, .darkmode-toggle {z-index: 500;}
+              .darkmode--activated button:not(.darkmode-toggle) {background: #bd9e68; border-color: #bd9e68; color: #000; font-weight : 700;}
+              .darkmode--activated .pretty.p-switch.p-fill input:checked~.state.p-info:before {background-color: #bd9e68 !important; border-color: #bd9e68;}
+              .darkmode--activated .pretty.p-switch.p-fill input:checked~.state label:after {background-color: #333 !important;}
+             ")
+  )
+}
+
+darkmode <- function(session,
+                     bottom = '32px',
+                     right = '32px',
+                     left = 'unset',
+                     time = '0.5s',
+                     mixColor = '#fff',
+                     backgroundColor = '#fff',
+                     buttonColorDark = '#100f2c',
+                     buttonColorLight = '#fff',
+                     saveInCookies = FALSE,
+                     label = '🌓',
+                     autoMatchOsTheme = TRUE) {
+
+  options <- jsonlite::toJSON(list(
+    bottom = bottom,
+    right = right,
+    left = left,
+    time = time,
+    mixColor = mixColor,
+    backgroundColor = backgroundColor,
+    buttonColorDark = buttonColorDark,
+    buttonColorLight = buttonColorLight,
+    saveInCookies = saveInCookies,
+    label = label,
+    autoMatchOsTheme = autoMatchOsTheme
+  ), auto_unbox = TRUE)
+
+
+  jscode0 <- paste0("const darkmode =  new Darkmode(",options, ");")
+  jscode <- paste(jscode0, "darkmode.showWidget();")
+
+  session$sendCustomMessage(
+    type = "darkmode_enable", list(message = jscode)
+  )
+
+}
+
+darkmode_toggle <- function(session,
+                            inputid = 'darktoggle',
+                            saveInCookies = FALSE,
+                            autoMatchOsTheme = TRUE) {
+
+  options <- jsonlite::toJSON(list(
+    saveInCookies = saveInCookies,
+    autoMatchOsTheme = autoMatchOsTheme
+  ), auto_unbox = TRUE)
+
+
+  jscode0 <- paste0("const darkmode =  new Darkmode(",options, ");")
+  jscode.toggle <- paste0(jscode0, "$('#", inputid, "').click(function(){
+              darkmode.toggle();}); if (darkmode.isActivated()) {
+              document.getElementById('",inputid, "').checked = true;
+            } else {document.getElementById('", inputid, "').checked = false;}")
+
+  session$sendCustomMessage(type = "darkmode_enable", list(message = jscode.toggle))
+
+}
+
+
+# UI
+ui <- fluidPage(
+
+  titlePanel("HTML Generator"),
+
+  # Setup
+  use_darkmode(),
+
+  # Inputs
+  fluidRow(
+    actionButton("generatehtml", "Generate HTML Code", icon = icon("code"), class = "btn-primary"),
+    tags$div(style = "margin-top: -25px; float: right; margin-right: -150px;",
+             prettySwitch("togglemode", "Dark Mode", value = FALSE, fill = TRUE, status = "info")
+    )
+  ), DT::dataTableOutput("mydt")
+
+)
+
+
+# Server
+server <- function(input, output, session) {
+
+  darkmode(session)
+  # darkmode_toggle(session, inputid = 'togglemode')
+
+  output$mydt <- DT::renderDataTable(mtcars,
+                                     options = list(pageLength = 10, autoWidth = TRUE),
+                                     rownames= FALSE)
+
+}
+
+# Run App
+shinyApp(ui = ui, server = server)

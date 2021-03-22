@@ -1,0 +1,104 @@
+library(shiny)
+library(argonR)
+library(argonDash)
+library(magrittr)
+library(shinyDarkmode)
+
+shiny::shinyApp(
+  ui = argonDashPage(
+    title = "Argon Dashboard Demo",
+    author = "David",
+    description = "Argon Dash Test",
+    sidebar = argonDashSidebar(
+      vertical = TRUE,
+      skin = "light",
+      background = "white",
+      size = "md",
+      side = "left",
+      id = "my_sidebar",
+      brand_url = "http://www.google.com",
+      brand_logo = "https://demos.creative-tim.com/argon-design-system/assets/img/brand/blue.png",
+      argonSidebarHeader(title = "Main Menu"),
+      argonSidebarMenu(
+        argonSidebarItem(
+          tabName = "cards",
+          icon = "tv-2",
+          icon_color = "primary",
+          "Cards"
+        )
+      ),
+      argonSidebarDivider(),
+      use_darkmode(),
+      argonSidebarHeader(title = "Other Items")
+    ),
+    navbar = argonDashNavbar(), 
+    header = argonDashHeader(
+      gradient = TRUE,
+      color = "primary",
+      separator = TRUE,
+      separator_color = "secondary",
+      argonCard(
+        title = "Argon Card",
+        src = "http://www.google.com",
+        hover_lift = TRUE,
+        shadow = TRUE,
+        shadow_size = NULL,
+        hover_shadow = FALSE,
+        border_level = 0,
+        icon = "atom",
+        status = "primary",
+        background_color = NULL,
+        gradient = FALSE, 
+        floating = FALSE,
+        "This is the content"
+      )
+    ),
+    body = argonDashBody(
+      argonTabItems(
+        argonTabItem(
+          tabName = "cards",
+          argonRow(
+            argonCard(
+              width = 12,
+              title = "Argon Card",
+              src = NULL,
+              hover_lift = TRUE,
+              shadow = TRUE,
+              shadow_size = NULL,
+              hover_shadow = FALSE,
+              border_level = 0,
+              icon = "atom",
+              status = "primary",
+              background_color = NULL,
+              gradient = FALSE, 
+              floating = FALSE,
+              argonCarousel(
+                width = 12,
+                id = "carousel2",
+                argonCarouselItem(
+                  src = "https://demos.creative-tim.com/argon-design-system/assets/img/theme/img-1-1200x1000.jpg",
+                  active = TRUE
+                ),
+                argonCarouselItem(
+                  src = "https://demos.creative-tim.com/argon-design-system/assets/img/theme/img-2-1200x1000.jpg",
+                  active = FALSE
+                )
+              )
+            ) 
+          )
+        )
+      )
+    ),
+    footer = argonDashFooter(
+      copyrights = "@Divad Nojnarg, 2018",
+      src = "https://github.com/DivadNojnarg",
+      argonFooterMenu(
+        argonFooterItem("RinteRface", src = "https://github.com/RinteRface"),
+        argonFooterItem("argon", src = "https://demos.creative-tim.com/argon-design-system/index.html")
+      )
+    )
+  ),
+  server = function(input, output, session) {
+    darkmode(session, label = "⏳")
+  }
+)

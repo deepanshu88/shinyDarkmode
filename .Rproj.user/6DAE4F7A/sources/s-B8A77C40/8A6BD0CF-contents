@@ -1,0 +1,244 @@
+#' Set up for DarkMode
+#'
+#' It loads required CSS and JS files for the darkmode
+#'
+#' @return
+#' @export
+#'
+#' @author Deepanshu Bhalla
+#' @examples
+#' library(shiny)
+#' library(shinyDarkmode)
+#' vars <- setdiff(names(iris), "Species")
+#' ui <- fluidPage(
+#'
+#'   titlePanel("Sample App"),
+#'
+#'   # Setup
+#'   use_darkmode(),
+#'
+#'   sidebarPanel(
+#'     selectInput('xcol', 'X Variable', vars),
+#'     selectInput('ycol', 'Y Variable', vars, selected = vars[[2]]),
+#'     numericInput('clusters', 'Cluster count', 3, min = 1, max = 9)
+#'   ),
+#'   mainPanel(
+#'     plotOutput('plot1')
+#'   ),
+#'
+#'   column(width = 12,
+#'          DT::dataTableOutput("mydt")
+#'   )
+#' )
+#'
+#' # Server
+#' server <- function(input, output, session) {
+#'
+#'   darkmode(label = "⏳")
+#'
+#'   # Combine the selected variables into a new data frame
+#'   selectedData <- reactive({
+#'     iris[, c(input$xcol, input$ycol)]
+#'   })
+#'
+#'   clusters <- reactive({
+#'     kmeans(selectedData(), input$clusters)
+#'   })
+#'
+#'   output$plot1 <- renderPlot({
+#'     palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+#'               "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
+#'
+#'     par(mar = c(5.1, 4.1, 0, 1))
+#'     plot(selectedData(),
+#'          col = clusters()$cluster,
+#'          pch = 20, cex = 3)
+#'     points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+#'   })
+#'
+#'   output$mydt <- DT::renderDataTable(iris,
+#'                                      options = list(pageLength = 10, autoWidth = TRUE),
+#'                                      rownames= FALSE)
+#'
+#' }
+#'
+#' # Run App
+#' shinyApp(ui = ui, server = server)
+
+use_darkmode <- function() {
+  tagList(
+    tags$head(tags$script(src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js")),
+    tags$script("Shiny.addCustomMessageHandler('darkmode_enable', function(data) { eval(data.message) });"),
+    tags$style(".darkmode-layer, .darkmode-toggle {z-index: 500;}")
+  )
+}
+
+#' Enable DarkMode with default button
+#'
+#' It lets user to toggle darkmode with default button
+#'
+#' @param session Session
+#' @param label button label for toggling dark mode
+#'
+#' @return
+#' @export
+#'
+#' @author Deepanshu Bhalla
+#' @examples
+#' library(shiny)
+#' library(shinyDarkmode)
+#' vars <- setdiff(names(iris), "Species")
+#' ui <- fluidPage(
+#'
+#'   titlePanel("Sample App"),
+#'
+#'   # Setup
+#'   use_darkmode(),
+#'
+#'   sidebarPanel(
+#'     selectInput('xcol', 'X Variable', vars),
+#'     selectInput('ycol', 'Y Variable', vars, selected = vars[[2]]),
+#'     numericInput('clusters', 'Cluster count', 3, min = 1, max = 9)
+#'   ),
+#'   mainPanel(
+#'     plotOutput('plot1')
+#'   ),
+#'
+#'   column(width = 12,
+#'          DT::dataTableOutput("mydt")
+#'   )
+#' )
+#'
+#' # Server
+#' server <- function(input, output, session) {
+#'
+#'   darkmode(label = "⏳")
+#'
+#'   # Combine the selected variables into a new data frame
+#'   selectedData <- reactive({
+#'     iris[, c(input$xcol, input$ycol)]
+#'   })
+#'
+#'   clusters <- reactive({
+#'     kmeans(selectedData(), input$clusters)
+#'   })
+#'
+#'   output$plot1 <- renderPlot({
+#'     palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+#'               "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
+#'
+#'     par(mar = c(5.1, 4.1, 0, 1))
+#'     plot(selectedData(),
+#'          col = clusters()$cluster,
+#'          pch = 20, cex = 3)
+#'     points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+#'   })
+#'
+#'   output$mydt <- DT::renderDataTable(iris,
+#'                                      options = list(pageLength = 10, autoWidth = TRUE),
+#'                                      rownames= FALSE)
+#'
+#' }
+#'
+#' # Run App
+#' shinyApp(ui = ui, server = server)
+darkmode <- function(session = getDefaultReactiveDomain(),
+                     bottom = '32px',
+                     right = '32px',
+                     left = 'unset',
+                     time = '0.5s',
+                     mixColor = '#fff',
+                     backgroundColor = '#fff',
+                     buttonColorDark = '#100f2c',
+                     buttonColorLight = '#fff',
+                     saveInCookies = FALSE,
+                     label = '🌓',
+                     autoMatchOsTheme = TRUE) {
+
+  options <- jsonlite::toJSON(list(
+    bottom = bottom,
+    right = right,
+    left = left,
+    time = time,
+    mixColor = mixColor,
+    backgroundColor = backgroundColor,
+    buttonColorDark = buttonColorDark,
+    buttonColorLight = buttonColorLight,
+    saveInCookies = saveInCookies,
+    label = label,
+    autoMatchOsTheme = autoMatchOsTheme
+  ), auto_unbox = TRUE)
+
+
+  jscode0 <- paste0("const darkmode =  new Darkmode(",options, ");")
+  jscode <- paste(jscode0, "darkmode.showWidget();")
+
+  session$sendCustomMessage(
+    type = "darkmode_enable", list(message = jscode)
+  )
+
+}
+
+#' Toggle darkmode with custom checkbox
+#'
+#' @param session CurrentSession
+#' @param inputid Input ID of checkbox (or switch in shinyWidgets)
+#' @param saveInCookies whether save in cookies
+#' @param autoMatchOsTheme BMatch rowser Theme
+#' @return
+#' @export
+#'
+#' @examples
+#' library(shiny)
+#' library(shinyWidgets)
+#' library(shinyDarkmode)
+#' ui <- fluidPage(
+#'
+#'   titlePanel("Sample App"),
+#'
+#'   # Setup
+#'   use_darkmode(),
+#'
+#'   # Inputs
+#'   fluidRow(
+#'     tags$div(style = "margin-top: -25px; float: right; margin-right: -150px;",
+#'              prettySwitch("togglemode", "Dark Mode", value = FALSE, fill = TRUE, status = "info")
+#'     )
+#'   ), DT::dataTableOutput("mydt")
+#'
+#' )
+#'
+#'
+#' # Server
+#' server <- function(input, output, session) {
+#'
+#'   darkmode_toggle(inputid = 'togglemode')
+#'
+#'   output$mydt <- DT::renderDataTable(mtcars,
+#'                                      options = list(pageLength = 10, autoWidth = TRUE),
+#'                                      rownames= FALSE)
+#'
+#' }
+#'
+#' # Run App
+#' shinyApp(ui = ui, server = server)
+darkmode_toggle <- function(session = getDefaultReactiveDomain(),
+                            inputid = 'darktoggle',
+                            saveInCookies = FALSE,
+                            autoMatchOsTheme = TRUE) {
+
+  options <- jsonlite::toJSON(list(
+    saveInCookies = saveInCookies,
+    autoMatchOsTheme = autoMatchOsTheme
+  ), auto_unbox = TRUE)
+
+
+  jscode0 <- paste0("const darkmode =  new Darkmode(",options, ");")
+  jscode.toggle <- paste0(jscode0, "$('#", inputid, "').click(function(){
+              darkmode.toggle();}); if (darkmode.isActivated()) {
+              document.getElementById('",inputid, "').checked = true;
+            } else {document.getElementById('", inputid, "').checked = false;}")
+
+  session$sendCustomMessage(type = "darkmode_enable", list(message = jscode.toggle))
+
+}
