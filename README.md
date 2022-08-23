@@ -22,8 +22,8 @@ remotes::install_github("deepanshu88/shinyDarkmode")
 ## Example
 
 This is a basic example which shows you how to add darkmode. To know how
-to add darkmode with custom checkbox, check out the complete
-documentation of [shinyDarkmode](https://www.listendata.com/2021/03/shinydarkmode-add-darkmode-to-shiny-apps.html)
+to add darkmode with custom checkbox, check out the ** complete
+documentation of ** [shinyDarkmode](https://www.listendata.com/2021/03/shinydarkmode-add-darkmode-to-shiny-apps.html)
 
 ``` r
 library(shiny)
